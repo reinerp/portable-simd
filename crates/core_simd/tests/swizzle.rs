@@ -1,5 +1,5 @@
 #![feature(portable_simd)]
-use core_simd::simd::{Simd, Swizzle};
+use core_simd::simd::{Simd, Swizzle, u32x4};
 
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen_test::*;
@@ -77,7 +77,7 @@ fn interleave_one() {
 
 #[test]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
-fn slice() {
+fn split_to() {
     let a = Simd::from_array([0, 1, 2, 3, 4, 5, 6, 7]);
     let [lo, hi] = a.split_to::<4>();
     assert_eq!(lo.to_array(), [0, 1, 2, 3]);
@@ -86,10 +86,28 @@ fn slice() {
 
 #[test]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
-fn concat() {
+fn split() {
+    let a = Simd::from_array([0, 1, 2, 3, 4, 5, 6, 7]);
+    let [lo, hi]: [u32x4] = a.split();
+    assert_eq!(lo.to_array(), [0, 1, 2, 3]);
+    assert_eq!(hi.to_array(), [4, 5, 6, 7]);
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn concat_to() {
     let x = Simd::from_array([0, 1, 2, 3]);
     let y = Simd::from_array([4, 5, 6, 7]);
     let z = x.concat_to::<8>(y);
+    assert_eq!(z.to_array(), [0, 1, 2, 3, 4, 5, 6, 7]);
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn concat() {
+    let x = Simd::from_array([0, 1, 2, 3]);
+    let y = Simd::from_array([4, 5, 6, 7]);
+    let z = x.concat(y);
     assert_eq!(z.to_array(), [0, 1, 2, 3, 4, 5, 6, 7]);
 }
 

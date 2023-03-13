@@ -367,9 +367,37 @@ where
 
     /// Splits a vector into its two halves.
     ///
+    /// Vector length must be even, or a compile error will be raised.
+    ///
+    /// ```
+    /// # #![feature(portable_simd)]
+    /// # #[cfg(feature = "as_crate")] use core_simd::simd::Simd;
+    /// # #[cfg(not(feature = "as_crate"))] use core::simd::Simd;
+    /// let x = Simd::from_array([0, 1, 2, 3, 4, 5, 6, 7]);
+    /// let [y, z] = x.split();
+    /// assert_eq!(y.to_array(), [0, 1, 2, 3]);
+    /// assert_eq!(z.to_array(), [4, 5, 6, 7]);
+    /// ```
+    #[inline]
+    #[must_use = "method returns a new vector and does not mutate the original inputs"]
+    #[cfg(feature = "generic_const_exprs")]
+    pub fn split(self) -> [Simd<T, { LANES / 2 }>; 2]
+    where
+        LaneCount<{ LANES / 2 }>: SupportedLaneCount,
+    {
+        self.split_to::<{ LANES / 2 }>()
+    }
+
+    /// Splits a vector into its two halves.
+    ///
+    /// Vector length must be even, or a compile error will be raised.
+    ///
     /// Due to limitations in const generics, the length of the resulting vector cannot be inferred
     /// from the input vectors. You must specify it explicitly. A compile-time error will be raised
     /// if `HALF_LANES * 2 != LANES`.
+    ///
+    /// When using the language feature and `std::simd` crate feature `generic_const_exprs`, prefer
+    /// to use `Simd::split` which can infer the output length.
     ///
     /// ```
     /// # #![feature(portable_simd)]
@@ -411,9 +439,33 @@ where
 
     /// Concatenates two vectors of equal length.
     ///
+    /// ```
+    /// # #![feature(portable_simd)]
+    /// # #[cfg(feature = "as_crate")] use core_simd::simd::Simd;
+    /// # #[cfg(not(feature = "as_crate"))] use core::simd::Simd;
+    /// let x = Simd::from_array([0, 1, 2, 3]);
+    /// let y = Simd::from_array([4, 5, 6, 7]);
+    /// let z = x.concat_to::<8>(y);
+    /// assert_eq!(z.to_array(), [0, 1, 2, 3, 4, 5, 6, 7]);
+    /// ```
+    #[inline]
+    #[must_use = "method returns a new vector and does not mutate the original inputs"]
+    #[cfg(feature = "generic_const_exprs")]
+    pub fn concat(self, other: Self) -> Simd<T, { LANES * 2 }>
+    where
+        LaneCount<{ LANES * 2 }>: SupportedLaneCount,
+    {
+        self.concat_to::<{ LANES * 2 }>(other)
+    }
+
+    /// Concatenates two vectors of equal length.
+    ///
     /// Due to limitations in const generics, the length of the resulting vector cannot be inferred
     /// from the input vectors. You must specify it explicitly. A compile time error will be raised
-    /// if `LANES * 2 != DOUBLE_LANES`
+    /// if `LANES * 2 != DOUBLE_LANES`.
+    ///
+    /// When using the language feature and `std::simd` crate feature `generic_const_exprs`, prefer
+    /// to use `Simd::split` which can infer the output length.
     ///
     /// ```
     /// # #![feature(portable_simd)]
